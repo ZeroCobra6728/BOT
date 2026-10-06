@@ -2,10 +2,6 @@ from pathlib import Path
 import shutil, re, urllib.request, json, base64
 
 ROOT=Path(__file__).resolve().parent
-ai=ROOT/"ai_override.py"
-target=ROOT/"app/services/ai.py"
-if ai.exists() and target.exists():
-    shutil.copyfile(ai,target)
 
 js_path=ROOT/"app/static/app.js"
 if js_path.exists():
