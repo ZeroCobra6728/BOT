@@ -1,9 +1,10 @@
-name: Five-year backtest
+name: Five-year backtest v1.3
 on:
   push:
     branches: [audit-backtest]
     paths:
       - 'research/backtest_5y.py'
+      - 'research/backtest_5y_v13.py'
       - '.github/workflows/backtest-5y.yml'
   workflow_dispatch:
 jobs:
@@ -17,13 +18,13 @@ jobs:
           python-version: '3.12'
       - name: Install research dependencies
         run: pip install --disable-pip-version-check -q pandas numpy requests
-      - name: Run five-year backtest
-        run: python research/backtest_5y.py
+      - name: Run five-year backtest v1.3
+        run: python research/backtest_5y_v13.py
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backtest-5y-results
+          name: backtest-5y-v13-results
           path: |
             backtest_result.json
             backtest_monthly.csv
