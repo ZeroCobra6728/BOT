@@ -3,7 +3,7 @@ import base64, json, re
 import httpx
 from app.config import settings
 
-OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"\nGEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 def _extract_text(payload: dict) -> str:
     if payload.get("output_text"):
@@ -48,6 +48,23 @@ async def _response(input_items, instructions: str, max_output_tokens: int=900) 
 def _sources(context: dict):
     return ((context.get("analysis") or {}).get("sources") or [])[:8]
 
+async def _gemini_text(prompt: str) -> str:
+    import os
+    key=os.getenv("GEMINI_API_KEY","").strip()
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY no configurada")
+    async with httpx.AsyncClient(timeout=40.0) as client:
+        r=await client.post(GEMINI_URL,headers={"x-goog-api-key":key,"Content-Type":"application/json"},json={"contents":[{"parts":[{"text":prompt}]}]})
+    if r.status_code >= 400:
+        detail=r.text[:300]
+        raise RuntimeError(f"Gemini HTTP {r.status_code}: {detail}")
+    data=r.json()
+    parts=((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+    text="".join(str(p.get("text","")) for p in parts).strip()
+    if not text:
+        raise RuntimeError("Gemini no devolvió texto")
+    return text
+
 async def answer_assistant(message: str, page: str, context: dict) -> dict:
     if not settings.openai_api_key:
         return {"answer":"La IA no está configurada en el servidor. El administrador debe configurar OPENAI_API_KEY.","sources":_sources(context),"mode":"error","warning":"OPENAI_API_KEY no configurada"}
@@ -72,18 +89,18 @@ async def answer_assistant(message: str, page: str, context: dict) -> dict:
     )
     prompt=f"Pregunta del usuario: {message}\n\nContexto actual de OKX Bot Analyzer (puede estar vacío):\n{raw}"
     try:
-        text=await _response(prompt,instructions,1000)
+        text=await _gemini_text(instructions+"\\n\\n"+prompt)
         return {"answer":text,"sources":_sources(context),"mode":"ia"}
     except Exception as exc:
         msg=str(exc)
-        print(f"OPENAI_ASSISTANT_ERROR: {msg}", flush=True)
-        public="El asistente de IA no pudo conectarse con OpenAI en este momento."
+        print(f"GEMINI_ASSISTANT_ERROR: {msg}", flush=True)
+        public="El asistente gratuito de Gemini no pudo responder en este momento."
         if "429" in msg:
-            public+=" La API respondió con un límite/cuota de la cuenta; revisa el saldo o facturación de la API de OpenAI."
+            public+=" Gemini respondió con un límite temporal o de cuota del nivel gratuito."
         elif "401" in msg:
-            public+=" La API rechazó la clave configurada; revisa OPENAI_API_KEY."
+            public+=" Gemini rechazó la clave configurada; revisa GEMINI_API_KEY."
         elif "403" in msg:
-            public+=" La cuenta no tiene permiso para usar el modelo configurado."
+            public+=" La clave/proyecto no tiene permiso para usar el modelo configurado."
         return {"answer":public,"sources":_sources(context),"mode":"error","warning":msg[:220]}
 
 async def analyze_screenshots(files: list[tuple[str,str,bytes]]) -> dict:
