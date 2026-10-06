@@ -1,7 +1,7 @@
-name: Inspect runtime source
+name: Inspect runtime for backtest audit
 on:
   push:
-    branches: [main]
+    branches: [audit-backtest]
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -12,10 +12,16 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import base64, io, zipfile
-          root=Path(".")
-          encoded="".join(p.read_text() for p in sorted(root.glob("runtime_bundle.part*")))
+          root=Path('.')
+          encoded=''.join(p.read_text() for p in sorted(root.glob('runtime_bundle.part*')))
           with zipfile.ZipFile(io.BytesIO(base64.b64decode(encoded))) as z:
-              for name in ["app/services/ai.py","app/services/sources.py","app/main.py","app/static/app.js"]:
-                  print("\n===== "+name+" =====")
+              names=z.namelist()
+              print('===== FILE LIST =====')
+              for n in names:
+                  if n.startswith('app/') and (n.endswith('.py') or n.endswith('.js')):
+                      print(n)
+              targets=[n for n in names if n in {'app/config.py','app/domain.py'} or n.startswith('app/services/') and n.endswith('.py')]
+              for name in targets:
+                  print('\n===== '+name+' =====')
                   print(z.read(name).decode())
           PY
