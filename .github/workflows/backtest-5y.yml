@@ -1,0 +1,30 @@
+name: Five-year backtest
+on:
+  push:
+    branches: [audit-backtest]
+    paths:
+      - 'research/backtest_5y.py'
+      - '.github/workflows/backtest-5y.yml'
+  workflow_dispatch:
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -q pandas numpy requests
+      - name: Run five-year backtest
+        run: python research/backtest_5y.py
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-5y-results
+          path: |
+            backtest_result.json
+            backtest_monthly.csv
+          if-no-files-found: ignore
