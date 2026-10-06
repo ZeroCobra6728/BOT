@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parent
 
 js_path=ROOT/"app/static/app.js"
 if js_path.exists():
-    js=js_path.read_text(encoding="utf-8")
+    js=js_path.read_text(encoding="utf-8")\n    js=js.replace("v1.1","v1.2").replace("V1.1","V1.2").replace("Versión 1.1","Versión 1.2")
     if "function humanSourceUrl(" not in js:
         helper=r'''
 function humanSourceUrl(s,pair=''){
