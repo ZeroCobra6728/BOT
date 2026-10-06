@@ -7,6 +7,7 @@ js_path=ROOT/"app/static/app.js"
 if js_path.exists():
     js=js_path.read_text(encoding="utf-8")
     js=js.replace("v1.1","v1.2").replace("V1.1","V1.2").replace("Versión 1.1","Versión 1.2")
+    js += '\n// v1.2 UI cleanup\ndocument.addEventListener("DOMContentLoaded",()=>{ document.querySelectorAll("body *").forEach(el=>{ if(el.children.length===0 && el.textContent){ el.textContent=el.textContent.replace(/Versión 1\\.1/g,"Versión 1.2").replace(/v1\\.1/g,"v1.2").replace(/V1\\.1/g,"V1.2"); } }); const ai=[...document.querySelectorAll("button,a,div")].find(el=>el.textContent.trim()==="IA" && el.children.length===0); if(ai){ const host=ai.closest("button")||ai; host.style.display="none"; } });\n'
     if "function humanSourceUrl(" not in js:
         helper=r'''
 function humanSourceUrl(s,pair=''){
