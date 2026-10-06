@@ -1,0 +1,31 @@
+name: Five-year backtest dynamic-only
+on:
+  push:
+    branches: [audit-backtest]
+    paths:
+      - 'research/backtest_5y_dynamic_only.py'
+      - '.github/workflows/backtest-dynamic-only.yml'
+  workflow_dispatch:
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install --disable-pip-version-check -q pandas numpy requests
+      - name: Run dynamic-only backtest
+        working-directory: research
+        run: python backtest_5y_dynamic_only.py
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-dynamic-only-results
+          path: |
+            research/backtest_result.json
+            research/backtest_monthly.csv
+          if-no-files-found: ignore
