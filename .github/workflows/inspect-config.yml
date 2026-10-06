@@ -1,0 +1,14 @@
+name: Inspect config
+on: push
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          import base64,glob,io,zipfile
+          s=''.join(open(p).read() for p in sorted(glob.glob('runtime_bundle.part*')))
+          z=zipfile.ZipFile(io.BytesIO(base64.b64decode(s)))
+          print(z.read('app/config.py').decode())
+          PY
