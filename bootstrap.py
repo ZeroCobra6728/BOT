@@ -16,4 +16,5 @@ def extract_runtime() -> None:
 
 extract_runtime()
 runpy.run_path(str(ROOT / "runtime_patch.py"), run_name="__runtime_patch__")
+runpy.run_path(str(ROOT / "runtime_js_fix.py"), run_name="__runtime_js_fix__")
 runpy.run_path(str(ROOT / "run.py"), run_name="__main__")
