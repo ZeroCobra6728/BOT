@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil, re
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parent\n\nconfig_path=ROOT/"app/config.py"\nif config_path.exists():\n    cfg=config_path.read_text(encoding="utf-8")\n    if "gemini_api_key:" not in cfg:\n        cfg=cfg.replace("    openai_api_key: str | None = os.getenv(\\\"OPENAI_API_KEY\\\") or os.getenv(\\\"AI_API_KEY\\\") or None", "    openai_api_key: str | None = os.getenv(\\\"OPENAI_API_KEY\\\") or os.getenv(\\\"AI_API_KEY\\\") or None\\n    gemini_api_key: str | None = os.getenv(\\\"GEMINI_API_KEY\\\") or None")\n        config_path.write_text(cfg,encoding="utf-8")
 ai=ROOT/"ai_override.py"
 target=ROOT/"app/services/ai.py"
 if ai.exists() and target.exists():
