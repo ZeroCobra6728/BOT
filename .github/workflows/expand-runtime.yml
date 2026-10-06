@@ -7,21 +7,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect bundled runtime
+      - name: Extract bundled runtime
         run: |
           python - <<'PY'
           from pathlib import Path
           import base64, io, zipfile
           root=Path('.')
           encoded=''.join(p.read_text() for p in sorted(root.glob('runtime_bundle.part*')))
-          with zipfile.ZipFile(io.BytesIO(base64.b64decode(encoded))) as z:
-              names=z.namelist()
-              print('===== FILE LIST =====')
-              for n in names:
-                  if n.startswith('app/') and (n.endswith('.py') or n.endswith('.js')):
-                      print(n)
-              targets=[n for n in names if n in {'app/config.py','app/domain.py'} or n.startswith('app/services/') and n.endswith('.py')]
-              for name in targets:
-                  print('\n===== '+name+' =====')
-                  print(z.read(name).decode())
+          raw=base64.b64decode(encoded)
+          with zipfile.ZipFile(io.BytesIO(raw)) as z:
+              for name in z.namelist():
+                  if name.startswith('app/') and (name.endswith('.py') or name.endswith('.js')):
+                      z.extract(name, 'runtime_audit')
           PY
+      - name: Upload runtime source
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-audit-source
+          path: runtime_audit/app
