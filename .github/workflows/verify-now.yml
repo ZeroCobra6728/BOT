@@ -1,0 +1,11 @@
+name: One-time live AI verification
+on:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify
+        run: |
+          curl --fail-with-body -sS -X POST 'https://okx-bot-analyzer.onrender.com/api/public/assistant' -H 'Content-Type: application/json' --data '{"message":"Hola. Responde solamente IA OK.","page":"dashboard","context":{}}'
