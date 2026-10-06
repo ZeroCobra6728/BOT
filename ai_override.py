@@ -18,7 +18,6 @@ def _extract_text(payload: dict) -> str:
     return "\n".join(parts).strip()
 
 async def _response(input_items, instructions: str, max_output_tokens: int=900) -> str:
-    if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY no configurada")
     if isinstance(input_items, str):
         input_items=[{"role":"user","content":input_items}]
@@ -66,8 +65,6 @@ async def _gemini_text(prompt: str) -> str:
     return text
 
 async def answer_assistant(message: str, page: str, context: dict) -> dict:
-    if not settings.openai_api_key:
-        return {"answer":"La IA no está configurada en el servidor. El administrador debe configurar OPENAI_API_KEY.","sources":_sources(context),"mode":"error","warning":"OPENAI_API_KEY no configurada"}
     compact={
         "page":page,
         "bots":context.get("bots",[])[:8],
@@ -104,7 +101,6 @@ async def answer_assistant(message: str, page: str, context: dict) -> dict:
         return {"answer":public,"sources":_sources(context),"mode":"error","warning":msg[:220]}
 
 async def analyze_screenshots(files: list[tuple[str,str,bytes]]) -> dict:
-    if not settings.openai_api_key:
         return {"provider_status":"NO_CONFIGURADO","detected":{},"contradictions":[],"message":"La visión automática requiere OPENAI_API_KEY en el servidor."}
     content=[{"type":"input_text","text":"Analiza estas capturas de bots de OKX. Devuelve SOLO JSON válido con claves: pair, bot_type, roi, pnl, capital, duration_hours, grid_profit, floating_pnl, date, lower_price, upper_price, leverage, contradictions. Usa null si no es visible y no inventes valores."}]
     for name,mime,data in files[:4]:
